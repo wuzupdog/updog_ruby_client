@@ -31,6 +31,7 @@ class UpdogRubyClientTest < Minitest::Test
     assert_equal({ user_id: 42 }, call[:payload][:context])
     assert_equal "abc123", call[:payload][:fingerprint]
     assert_equal 1, call[:payload][:breadcrumbs].length
+    assert_equal "info", call[:payload][:breadcrumbs][0][:level]
   end
 
   def test_notify_is_fail_safe
@@ -56,5 +57,50 @@ class UpdogRubyClientTest < Minitest::Test
 
     assert_equal false, UpdogRubyClient.enabled?
     assert_equal :ok, UpdogRubyClient.notify(StandardError.new("no-op"))
+  end
+
+  def test_notify_accepts_plain_string_message
+    fake = FakeTransport.new
+    UpdogRubyClient.configure { |c| c.transport = fake }
+
+    UpdogRubyClient.notify("plain error message")
+
+    payload = fake.calls.first[:payload]
+    assert_equal "RuntimeError", payload[:error_class]
+    assert_equal "plain error message", payload[:message]
+  end
+
+  def test_set_user_merges_user_into_context
+    UpdogRubyClient.context(account_id: "acc_123")
+
+    UpdogRubyClient.set_user(id: "42", email: "dev@example.com")
+
+    assert_equal(
+      {
+        account_id: "acc_123",
+        user: { id: "42", email: "dev@example.com" }
+      },
+      UpdogRubyClient::Context.get
+    )
+  end
+
+  def test_context_block_restores_previous_values
+    UpdogRubyClient.context(account_id: "acc_123")
+
+    UpdogRubyClient.with_context(user_id: 7) do
+      assert_equal({ account_id: "acc_123", user_id: 7 }, UpdogRubyClient::Context.get)
+    end
+
+    assert_equal({ account_id: "acc_123" }, UpdogRubyClient::Context.get)
+  end
+
+  def test_breadcrumb_supports_category_and_level
+    UpdogRubyClient.breadcrumb("http call", { path: "/health" }, category: "http", level: :debug)
+
+    crumb = UpdogRubyClient.breadcrumbs.first
+    assert_equal "http call", crumb[:message]
+    assert_equal "http", crumb[:category]
+    assert_equal "debug", crumb[:level]
+    assert_equal({ path: "/health" }, crumb[:metadata])
   end
 end
