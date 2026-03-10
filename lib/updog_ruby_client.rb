@@ -1,3 +1,4 @@
+require "time"
 require "updog_ruby_client/version"
 require "updog_ruby_client/config"
 require "updog_ruby_client/thread_store"
@@ -42,6 +43,16 @@ module UpdogRubyClient
       return :ok unless enabled?
 
       NoticeSender.send_error(kind, reason, backtrace, normalize_opts(opts, kwargs))
+      :ok
+    rescue StandardError
+      :ok
+    end
+
+    def notify_deployment(deployment = nil, **kwargs)
+      return :ok unless enabled?
+
+      payload = normalize_deployment(deployment, kwargs)
+      NoticeSender.send_deployment(payload)
       :ok
     rescue StandardError
       :ok
@@ -116,8 +127,23 @@ module UpdogRubyClient
       base.merge(kwargs)
     end
 
+    def normalize_deployment(deployment, kwargs)
+      base = deployment.is_a?(Hash) ? deployment.dup : {}
+      base.merge!(kwargs)
+
+      {
+        environment: base[:environment] || base["environment"] || configuration.environment,
+        service: base[:service] || base["service"],
+        version: base[:version] || base["version"] || ENV["RELEASE_VERSION"] || "unknown",
+        sha: base[:sha] || base["sha"] || ENV["GIT_SHA"],
+        deployed_at: base[:deployed_at] || base["deployed_at"] || Time.now.utc.iso8601
+      }.compact
+    end
+
     def enabled?
       !configuration.api_key.to_s.strip.empty?
     end
+
+    public :enabled?
   end
 end

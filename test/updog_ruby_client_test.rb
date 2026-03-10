@@ -103,4 +103,21 @@ class UpdogRubyClientTest < Minitest::Test
     assert_equal "debug", crumb[:level]
     assert_equal({ path: "/health" }, crumb[:metadata])
   end
+
+  def test_notify_deployment_sends_payload
+    fake = FakeTransport.new
+    UpdogRubyClient.configure { |c| c.transport = fake }
+
+    result = UpdogRubyClient.notify_deployment(version: "v1.2.3", service: "api", sha: "abc123")
+
+    assert_equal :ok, result
+    call = fake.calls.first
+    assert_equal "https://example.test/api/v1/deployments", call[:url]
+    assert_equal "test-key", call[:headers]["X-API-Key"]
+    assert_equal "development", call[:payload][:environment]
+    assert_equal "v1.2.3", call[:payload][:version]
+    assert_equal "api", call[:payload][:service]
+    assert_equal "abc123", call[:payload][:sha]
+    refute_nil call[:payload][:deployed_at]
+  end
 end

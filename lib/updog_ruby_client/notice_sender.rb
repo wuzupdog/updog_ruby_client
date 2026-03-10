@@ -11,6 +11,21 @@ module UpdogRubyClient
         deliver(payload)
       end
 
+      def send_deployment(attrs = {})
+        config = UpdogRubyClient.configuration
+        transport = config.transport || HttpTransport.new(
+          open_timeout: config.open_timeout,
+          read_timeout: config.read_timeout,
+          retries: config.retries
+        )
+
+        transport.post_json(
+          config.deployments_url,
+          attrs,
+          headers: { "X-API-Key" => config.api_key.to_s }
+        )
+      end
+
       private
 
       def deliver(payload)

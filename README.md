@@ -56,6 +56,17 @@ UpdogRubyClient.notify_error(:error, StandardError.new("boom"), caller)
 UpdogRubyClient.notify("Background job failed to deserialize payload")
 ```
 
+### Report deployments
+
+```ruby
+UpdogRubyClient.notify_deployment(
+  environment: "production",
+  service: "api",
+  version: "v1.2.3",
+  sha: "abc123"
+)
+```
+
 ### Context helpers (Honeybadger/AppSignal-style)
 
 ```ruby

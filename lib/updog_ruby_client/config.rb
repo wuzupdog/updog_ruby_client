@@ -22,5 +22,9 @@ module UpdogRubyClient
     def notices_url
       "#{endpoint}/api/v1/notices"
     end
+
+    def deployments_url
+      "#{endpoint}/api/v1/deployments"
+    end
   end
 end
