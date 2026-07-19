@@ -1,6 +1,8 @@
 module UpdogRubyClient
   module Transport
     class DeliveryError < StandardError; end
+    class PermanentError < DeliveryError; end
+    class PayloadTooLarge < DeliveryError; end
 
     class Base
       def post_json(_url, _payload, headers: {})

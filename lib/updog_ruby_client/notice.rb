@@ -15,6 +15,11 @@ module UpdogRubyClient
           request: opts.fetch(:request, {}),
           environment: UpdogRubyClient.configuration.environment,
           hostname: Socket.gethostname,
+          service: UpdogRubyClient.configuration.service,
+          release: UpdogRubyClient.configuration.release,
+          handled: opts.fetch(:handled, true),
+          mechanism: opts.fetch(:mechanism, "exception"),
+          occurred_at: Time.now.utc.iso8601,
           fingerprint: opts[:fingerprint],
           tags: opts.fetch(:tags, []),
           custom_data: opts.fetch(:custom_data, {})
@@ -43,6 +48,11 @@ module UpdogRubyClient
           request: opts.fetch(:request, {}),
           environment: UpdogRubyClient.configuration.environment,
           hostname: Socket.gethostname,
+          service: UpdogRubyClient.configuration.service,
+          release: UpdogRubyClient.configuration.release,
+          handled: opts.fetch(:handled, true),
+          mechanism: opts.fetch(:mechanism, kind.to_s),
+          occurred_at: Time.now.utc.iso8601,
           fingerprint: opts[:fingerprint],
           tags: opts.fetch(:tags, []),
           custom_data: opts.fetch(:custom_data, {})

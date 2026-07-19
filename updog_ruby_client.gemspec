@@ -1,6 +1,8 @@
+require_relative "lib/updog_ruby_client/version"
+
 Gem::Specification.new do |spec|
   spec.name          = "updog_ruby_client"
-  spec.version       = "0.1.0"
+  spec.version       = UpdogRubyClient::VERSION
   spec.authors       = ["Updog"]
   spec.email         = ["support@wuzupdog.com"]
 
