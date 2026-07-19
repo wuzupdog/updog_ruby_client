@@ -8,9 +8,12 @@ require "updog_ruby_client/backtrace"
 require "updog_ruby_client/notice"
 require "updog_ruby_client/transport"
 require "updog_ruby_client/http_transport"
+require "updog_ruby_client/delivery_worker"
 require "updog_ruby_client/notice_sender"
 
 module UpdogRubyClient
+  DELIVERY_WORKER_MUTEX = Mutex.new
+
   class << self
     def configure
       yield(configuration)
@@ -21,6 +24,8 @@ module UpdogRubyClient
     end
 
     def reset!
+      @delivery_worker&.shutdown(0.25)
+      @delivery_worker = nil
       @configuration = Config.new
       Context.clear
       Breadcrumbs.clear
@@ -94,6 +99,32 @@ module UpdogRubyClient
       Breadcrumbs.clear
     end
 
+    def flush(timeout = 5.0)
+      return :ok unless @delivery_worker
+
+      @delivery_worker.flush(timeout)
+    rescue StandardError
+      :error
+    end
+
+    def delivery_stats
+      delivery_worker.stats
+    end
+
+    def shutdown(timeout = 5.0)
+      @delivery_worker&.shutdown(timeout) || :ok
+    ensure
+      @delivery_worker = nil
+    end
+
+    def delivery_worker
+      return @delivery_worker if @delivery_worker
+
+      DELIVERY_WORKER_MUTEX.synchronize do
+        @delivery_worker ||= DeliveryWorker.new
+      end
+    end
+
     def set_user(user = nil, id: nil, email: nil, name: nil, username: nil, **extra)
       payload = user.is_a?(Hash) ? user.dup : {}
       payload[:id] = id if id
@@ -147,3 +178,5 @@ module UpdogRubyClient
     public :enabled?
   end
 end
+
+at_exit { UpdogRubyClient.shutdown(5.0) }
