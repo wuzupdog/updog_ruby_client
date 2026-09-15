@@ -7,7 +7,9 @@ Ruby client for [Updog](https://wuzupdog.com) error reporting.
 Add this line to your app's Gemfile:
 
 ```ruby
-gem "updog_ruby_client", git: "https://github.com/swanny85/updog_ruby_client"
+gem "updog_ruby_client",
+  git: "https://github.com/wuzupdog/updog_ruby_client",
+  tag: "v0.2.1"
 ```
 
 ## Configure
@@ -21,6 +23,7 @@ UpdogRubyClient.configure do |config|
   config.environment = ENV.fetch("UPDOG_ENVIRONMENT", "production")
   config.service = "checkout-api"
   config.release = ENV["RELEASE_VERSION"]
+  config.hostname = ENV["UPDOG_HOSTNAME"]
 
   # optional
   config.open_timeout = 2
@@ -28,6 +31,8 @@ UpdogRubyClient.configure do |config|
   config.retries = 3
 end
 ```
+
+`hostname` defaults to `UPDOG_HOSTNAME` when set, then falls back to the local system hostname. Set it explicitly when a container-generated hostname is not the identity you want attached to telemetry.
 
 ## API
 

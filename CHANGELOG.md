@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1
+
+- Add global hostname configuration through `config.hostname` or `UPDOG_HOSTNAME`.
+
 ## 0.2.0
 
 - Make capture calls non-blocking through a bounded single-worker in-memory queue.

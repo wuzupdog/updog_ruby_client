@@ -40,6 +40,20 @@ class UpdogRubyClientTest < Minitest::Test
     refute_nil payload[:occurred_at]
   end
 
+  def test_notify_uses_configured_hostname
+    fake = FakeTransport.new
+    UpdogRubyClient.configure do |config|
+      config.transport = fake
+      config.hostname = "app-01"
+    end
+
+    UpdogRubyClient.notify(StandardError.new("boom"))
+    UpdogRubyClient.flush(1)
+
+    payload = fake.calls.first[:payload][:notices].first
+    assert_equal "app-01", payload[:hostname]
+  end
+
   def test_notify_is_fail_safe
     fake = FakeTransport.new(raise_error: true)
     UpdogRubyClient.configure { |c| c.transport = fake }

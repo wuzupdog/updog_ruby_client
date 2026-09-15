@@ -1,3 +1,5 @@
+require "socket"
+
 module UpdogRubyClient
   class Config
     DEFAULT_ENDPOINT = "https://wuzupdog.com".freeze
@@ -16,6 +18,7 @@ module UpdogRubyClient
                   :open_timeout, :read_timeout, :retries, :service, :release,
                   :flush_interval, :max_queue_records, :max_queue_bytes,
                   :max_record_bytes, :max_batch_records, :max_batch_bytes
+    attr_writer :hostname
 
     def initialize
       @api_key = ENV["UPDOG_API_KEY"]
@@ -27,6 +30,7 @@ module UpdogRubyClient
       @retries = DEFAULT_RETRIES
       @service = ENV.fetch("UPDOG_SERVICE", "")
       @release = ENV.fetch("UPDOG_RELEASE", "")
+      @hostname = ENV["UPDOG_HOSTNAME"]
       @flush_interval = DEFAULT_FLUSH_INTERVAL
       @max_queue_records = DEFAULT_MAX_QUEUE_RECORDS
       @max_queue_bytes = DEFAULT_MAX_QUEUE_BYTES
@@ -41,6 +45,11 @@ module UpdogRubyClient
 
     def deployments_url
       "#{endpoint}/api/v1/deployments"
+    end
+
+    def hostname
+      value = @hostname.to_s.strip
+      value.empty? ? Socket.gethostname : value
     end
   end
 end

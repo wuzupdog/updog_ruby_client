@@ -209,7 +209,7 @@ module UpdogRubyClient
         service: payload[:service] || payload["service"] || config.service,
         environment: payload[:environment] || payload["environment"] || config.environment,
         release: payload[:release] || payload["release"] || config.release,
-        hostname: payload[:hostname] || payload["hostname"] || Socket.gethostname,
+        hostname: payload[:hostname] || payload["hostname"] || config.hostname,
         sdk_name: "updog_ruby_client",
         sdk_version: VERSION
       )
